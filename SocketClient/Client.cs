@@ -19,6 +19,11 @@ internal class Client
         
         Console.WriteLine($"Text received: {SocketUtils.ReadMessage(socket)}");
     }
+    /// <summary>
+    /// Starts a socket connection to the server
+    /// </summary>
+    /// <param name="remoteIpAddress">a string representation of the server's ip address</param>
+    /// <returns></returns>
     private Socket Start(string remoteIpAddress)
     {
         IPAddress ipAddress = IPAddress.Parse(remoteIpAddress);

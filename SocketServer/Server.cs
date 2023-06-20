@@ -7,15 +7,22 @@ namespace SocketServer;
 
 internal class Server
 {
-    public Server()
+    public Server() 
     {
         Socket listener = Start();
+        
         while (true)
         {
-            AcceptConnection(listener);
+            Socket socket = listener.Accept();
+            
+            Thread clientThread = new(() => HandleClient(socket));
+            clientThread.Start();
         }
     }
-    
+    /// <summary>
+    /// Starts a socket listener on port 6969
+    /// </summary>
+    /// <returns></returns>
     private Socket Start()
     {
         // Dns.GetHostEntry(Dns.GetHostName(), AddressFamily.InterNetwork); // still returns some IPv6 addresses on my machine
@@ -34,22 +41,23 @@ internal class Server
     }
 
     /// <summary>
-    /// Accepts a connection and reads the message from the client
-    /// then sends a message back to the client and closes the connection
+    /// Reads a message from the client and
+    /// then attempts to sends a message back and closes the connection
     /// </summary>
-    /// <param name="listener">an active socket listener</param>
-    private void AcceptConnection(Socket listener)
+    /// <param name="client">an active socket of an client</param>
+    private void HandleClient(Socket client)
     {
-        Socket handler = listener.Accept();
-        Console.WriteLine($"Socket connected to {handler.RemoteEndPoint}");
+        Console.WriteLine($"Socket connected to {client.RemoteEndPoint}");
 
-        Console.WriteLine($"Text received: {SocketUtils.ReadMessage(handler)}");
+        Console.WriteLine($"Text received: {SocketUtils.ReadMessage(client)}");
         
-        SocketUtils.SendMessage(handler, "Hello from server");
+        SocketUtils.SendMessage(client, "Hello from server");
         
-        Console.WriteLine($"Closing with client: {handler.RemoteEndPoint}");
-        handler.Shutdown(SocketShutdown.Both);
-        handler.Close();
-        Console.WriteLine("Closed connection successfully");
+        EndPoint? remoteEndPoint = client.RemoteEndPoint;
+        
+        Console.WriteLine($"Closing connection with client: {remoteEndPoint}");
+        client.Shutdown(SocketShutdown.Both);
+        client.Close();
+        Console.WriteLine($"Successfully closed connection with: {remoteEndPoint}");
     }
 }
