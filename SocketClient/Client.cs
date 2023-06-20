@@ -11,14 +11,23 @@ internal class Client
 {
     public Client(string remoteIpAddress)
     {
-        Console.WriteLine("Enter a message to send to the server:");
-        string message = Console.ReadLine() ?? string.Empty;
-        
+        Thread.Sleep(1000);
         Socket socket = Start(remoteIpAddress);
-        
-        SocketUtils.SendMessage(socket, message);
-        
-        Console.WriteLine($"Text received: {SocketUtils.ReadMessage(socket)}");
+    
+        while (true)
+        {
+            Console.WriteLine("Enter a message to send to the server:");
+            string message = Console.ReadLine() ?? string.Empty;
+            
+            
+            SocketUtils.SendMessage(socket, message);
+            
+            string response = SocketUtils.ReadMessage(socket);
+            Console.WriteLine($"Text received: {response}");
+            if (!response.Contains("<EOT>")) continue;
+            Console.WriteLine("Server disconnected");
+            break;
+        }
     }
     /// <summary>
     /// Starts a socket connection to the server

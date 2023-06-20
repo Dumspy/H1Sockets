@@ -5,6 +5,11 @@ namespace Utils;
 
 public abstract class IpAddressUtils
 {
+    /// <summary>
+    /// A simple gui to select an ip address from a list of ip addresses
+    /// </summary>
+    /// <param name="addresses">list of ip addresses</param>
+    /// <returns></returns>
     public static IPAddress SelectIp(IPAddress[] addresses)
     {
         int i = 0;

@@ -52,12 +52,20 @@ internal class Server
     {
         Console.WriteLine($"Socket connected to {client.RemoteEndPoint}");
 
-        Console.WriteLine($"Text received: {SocketUtils.ReadMessage(client)}");
-        
-        SocketUtils.SendMessage(client, "Hello from server");
+        while (true)
+        {
+            string message = SocketUtils.ReadMessage(client);
+            Console.WriteLine($"Text received: {message}");
+            
+            if (message.Contains("<EOT>"))
+            {
+                SocketUtils.SendMessage(client, "Goodbye from server<EOT>");
+                break;
+            }    
+            SocketUtils.SendMessage(client, "Hello from server");
+        }
         
         EndPoint? remoteEndPoint = client.RemoteEndPoint;
-        
         Console.WriteLine($"Closing connection with client: {remoteEndPoint}");
         client.Shutdown(SocketShutdown.Both);
         client.Close();
