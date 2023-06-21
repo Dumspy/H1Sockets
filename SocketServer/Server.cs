@@ -52,9 +52,10 @@ internal class Server
     private void HandleClient(Socket client)
     {
         Stopwatch stopwatch = new();
-        stopwatch.Start();
         
         Console.WriteLine($"Socket connected to {client.RemoteEndPoint}");
+        
+        stopwatch.Start();
         int messagesReceived = 0;
         while (true)
         {
@@ -66,7 +67,7 @@ internal class Server
                 SocketUtils.SendMessage(client, "Goodbye from server<EOT>");
                 break;
             }    
-            SocketUtils.SendMessage(client, "Hello from server");
+            SocketUtils.SendMessage(client, Guid.NewGuid().ToString());
             messagesReceived++;
         }
         

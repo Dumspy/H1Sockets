@@ -1,1 +1,1 @@
-﻿new SocketClient.Client("127.0.0.1");
+﻿new SocketClient.Client("10.233.149.105");

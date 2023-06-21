@@ -18,7 +18,7 @@ public abstract class SocketUtils
         {
             byte[] bytes = new byte[4096];
             int bytesRec = socket.Receive(bytes);
-            Console.WriteLine($"Received {bytesRec} bytes");
+            //Console.WriteLine($"Received {bytesRec} bytes");
             data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
             if(!data.Contains("<EOM>")) continue;
 
