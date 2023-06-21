@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Utils;
 
@@ -17,11 +18,15 @@ public abstract class SocketUtils
         {
             byte[] bytes = new byte[4096];
             int bytesRec = socket.Receive(bytes);
+            Console.WriteLine($"Received {bytesRec} bytes");
             data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
-            if (data.Contains("<EOM>"))
-            {
-                break;
-            }
+            if(!data.Contains("<EOM>")) continue;
+
+            const string pattern = @"<EOM>|<EOT>";
+            
+            data = Regex.Replace(data, pattern, "");
+            
+            break;
         }
 
         return data;

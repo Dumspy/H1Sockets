@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -50,19 +51,23 @@ internal class Server
     /// <param name="client">an active socket of an client</param>
     private void HandleClient(Socket client)
     {
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+        
         Console.WriteLine($"Socket connected to {client.RemoteEndPoint}");
-
+        int messagesReceived = 0;
         while (true)
         {
             string message = SocketUtils.ReadMessage(client);
             Console.WriteLine($"Text received: {message}");
             
-            if (message.Contains("<EOT>"))
+            if (messagesReceived == 100000)
             {
                 SocketUtils.SendMessage(client, "Goodbye from server<EOT>");
                 break;
             }    
             SocketUtils.SendMessage(client, "Hello from server");
+            messagesReceived++;
         }
         
         EndPoint? remoteEndPoint = client.RemoteEndPoint;
@@ -70,5 +75,7 @@ internal class Server
         client.Shutdown(SocketShutdown.Both);
         client.Close();
         Console.WriteLine($"Successfully closed connection with: {remoteEndPoint}");
+        stopwatch.Stop();
+        Console.WriteLine($"Handled 100k client messages in {stopwatch.ElapsedMilliseconds}ms");
     }
 }
