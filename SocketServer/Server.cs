@@ -56,19 +56,17 @@ internal class Server
         Console.WriteLine($"Socket connected to {client.RemoteEndPoint}");
         
         stopwatch.Start();
-        int messagesReceived = 0;
         while (true)
         {
             string message = SocketUtils.ReadMessage(client);
             Console.WriteLine($"Text received: {message}");
             
-            if (messagesReceived == 100000)
+            if (message.Contains("<EOT>"))
             {
                 SocketUtils.SendMessage(client, "Goodbye from server<EOT>");
                 break;
             }    
             SocketUtils.SendMessage(client, Guid.NewGuid().ToString());
-            messagesReceived++;
         }
         
         EndPoint? remoteEndPoint = client.RemoteEndPoint;

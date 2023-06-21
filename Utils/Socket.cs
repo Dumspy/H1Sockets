@@ -22,7 +22,8 @@ public abstract class SocketUtils
             data += Encoding.UTF8.GetString(bytes, 0, bytesRec);
             if(!data.Contains("<EOM>")) continue;
 
-            const string pattern = @"<EOM>|<EOT>";
+            //const string pattern = @"<EOM>|<EOT>";
+            const string pattern = @"<EOM>";
             
             data = Regex.Replace(data, pattern, "");
             
