@@ -19,7 +19,7 @@ public abstract class SocketUtils
             byte[] bytes = new byte[4096];
             int bytesRec = socket.Receive(bytes);
             //Console.WriteLine($"Received {bytesRec} bytes");
-            data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
+            data += Encoding.UTF8.GetString(bytes, 0, bytesRec);
             if(!data.Contains("<EOM>")) continue;
 
             const string pattern = @"<EOM>|<EOT>";
@@ -38,7 +38,7 @@ public abstract class SocketUtils
     /// <param name="message">message to send</param>
     public static void SendMessage(Socket socket, string message)
     {
-        byte[] msg = Encoding.ASCII.GetBytes(message+"<EOM>");
+        byte[] msg = Encoding.UTF8.GetBytes(message+"<EOM>");
         socket.Send(msg);
     }
 }
