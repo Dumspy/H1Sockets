@@ -5,12 +5,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using Utils;
+using Shared;
 
 namespace SocketServer;
 
 internal class Server
 {
+    private readonly User _identity = new(ConsoleColor.Red, "Server");
+    private readonly List<Socket> _clients = new();
     public Server() 
     {
         Socket listener = Start();
@@ -21,6 +23,8 @@ internal class Server
             
             Thread clientThread = new(() => HandleClient(socket));
             clientThread.Start();
+            _clients.Add(socket);
+            Console.WriteLine($"Clients connected: {_clients.Count}");
         }
     }
     /// <summary>
@@ -51,22 +55,18 @@ internal class Server
     /// <param name="client">an active socket of an client</param>
     private void HandleClient(Socket client)
     {
-        Stopwatch stopwatch = new();
-        
         Console.WriteLine($"Socket connected to {client.RemoteEndPoint}");
         
-        stopwatch.Start();
-        while (true)
+        while (client.Connected)
         {
-            string message = SocketUtils.ReadMessage(client);
-            Console.WriteLine($"Text received: {message}");
-            
-            if (message.Contains("<EOT>"))
+            Message? message = SocketUtils.ReadMessage(client);
+            if (message == null) continue;
+            message.Print();
+            foreach (Socket var in _clients.Where(var => var.Connected))
             {
-                SocketUtils.SendMessage(client, "Goodbye from server<EOT>");
-                break;
-            }    
-            SocketUtils.SendMessage(client, Guid.NewGuid().ToString());
+                if(var.RemoteEndPoint == client.RemoteEndPoint) continue;
+                SocketUtils.SendMessage(var, message);
+            }
         }
         
         EndPoint? remoteEndPoint = client.RemoteEndPoint;
@@ -74,7 +74,5 @@ internal class Server
         client.Shutdown(SocketShutdown.Both);
         client.Close();
         Console.WriteLine($"Successfully closed connection with: {remoteEndPoint}");
-        stopwatch.Stop();
-        Console.WriteLine($"Handled 100k client messages in {stopwatch.ElapsedMilliseconds}ms");
     }
 }

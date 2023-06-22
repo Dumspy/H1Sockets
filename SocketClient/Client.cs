@@ -1,26 +1,24 @@
-using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using Utils;
-using IPAddress = System.Net.IPAddress;
+using Shared;
 
 namespace SocketClient;
 
 internal class Client
 {
-    private readonly Thread _readerThread;
-    private readonly Thread _writerThread;
     private readonly Socket _socket;
-    public Client(string remoteIpAddress)
+    private readonly User _identity;
+    
+    private bool _abortThreads = false;
+    public Client(string remoteIpAddress, User identity)
     {
-        Console.ReadKey(); 
         _socket = Start(remoteIpAddress);
+        _identity = identity;
         
-        _readerThread = new Thread(Reader);    
-        _writerThread = new Thread(Writer);
-        _readerThread.Start();
-        _writerThread.Start();
+        Thread readerThread = new(Reader);    
+        Thread writerThread = new(Writer);
+        readerThread.Start();
+        writerThread.Start();
     }
     /// <summary>
     /// Starts a socket connection to the server
@@ -40,21 +38,23 @@ internal class Client
     
     private void Writer()
     {
-        while (true)
+        while (!_abortThreads)
         {
             string message = Console.ReadLine() ?? string.Empty;
-            SocketUtils.SendMessage(_socket, message);
+            if(message == string.Empty) continue;
+            SocketUtils.SendMessage(_socket, new Message(_identity,message));
         }
     }
     
     private void Reader()
     {
-        while (true)
+        while (!_abortThreads)
         {
-            string message = SocketUtils.ReadMessage(_socket);
-            Console.WriteLine($"Text received: {message}");
+            Message? message = SocketUtils.ReadMessage(_socket);
+            if (message == null) continue;
+            message.Print();
 
-            if (!message.Contains("<EOT>")) continue;
+            if (!message.Body.Contains("<EOT>")) continue;
             Close();
             break;
         }
@@ -64,7 +64,6 @@ internal class Client
     {
         _socket.Shutdown(SocketShutdown.Both);
         _socket.Close();
-        _readerThread.Abort(); // TODO Replace abort with a bool for the class that kills the while loop
-        _writerThread.Abort();
+        _abortThreads = true;
     }
 }
